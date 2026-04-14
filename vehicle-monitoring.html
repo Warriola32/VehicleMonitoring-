@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Monitoring | ISSESO</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-bg">
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">De La Salle Lipa</p>
+        <h2>ISSESO</h2>
+        <p class="subtext">Vehicle Monitoring</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="visitor-requests.html" class="nav-item">Visitor Requests</a>
+        <a href="vehicle-monitoring.html" class="nav-item active">Vehicle Monitoring</a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-header">
+        <div>
+          <h1>Vehicle Monitoring</h1>
+          <p class="subtext">Track all visitor vehicles entering and leaving campus.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadVehicleData()">Refresh Data</button>
+      </header>
+
+      <section class="table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Visitor</th>
+                <th>Company</th>
+                <th>Vehicle Type</th>
+                <th>Car Model</th>
+                <th>Plate Number</th>
+                <th>Status</th>
+                <th>Visit Date</th>
+              </tr>
+            </thead>
+            <tbody id="vehicleTableBody">
+              <tr><td colspan="8" class="empty-cell">Loading vehicle records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz_lhUFiSu8PGNfZMKC9CmUG_cLwm02Z2D4FmBn1hhQamMQeIOLGk18zBNE5X8KEGxh/exec";
+
+    async function loadVehicleData() {
+      try {
+        const response = await fetch(`${API_URL}?action=listVehicles`);
+        const result = await response.json();
+        const vehicles = (result.vehicles || []).reverse();
+        const table = document.getElementById("vehicleTableBody");
+
+        if (!vehicles.length) {
+          table.innerHTML = `<tr><td colspan="8" class="empty-cell">No vehicle records found.</td></tr>`;
+          return;
+        }
+
+        table.innerHTML = vehicles.map(v => `
+          <tr>
+            <td>${escapeHtml(v["Request ID"] || "")}</td>
+            <td>${escapeHtml(v["Full Name"] || "")}</td>
+            <td>${escapeHtml(v["Company"] || "")}</td>
+            <td>${escapeHtml(v["Vehicle Type"] || "-")}</td>
+            <td>${escapeHtml(v["Car Model"] || "-")}</td>
+            <td>${escapeHtml(v["Plate Number"] || "-")}</td>
+            <td>${escapeHtml(v["Status"] || "-")}</td>
+            <td>${escapeHtml(v["Visit Date"] || "-")}</td>
+          </tr>
+        `).join("");
+      } catch (error) {
+        document.getElementById("vehicleTableBody").innerHTML =
+          `<tr><td colspan="8" class="empty-cell">Failed to load vehicle records.</td></tr>`;
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    loadVehicleData();
+  </script>
+</body>
+</html>

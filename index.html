@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visitor Management System | De La Salle Lipa</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="page-bg">
+  <div class="dashboard-shell" style="grid-template-columns: 1fr;">
+    <main class="dashboard-main" style="max-width: 950px; margin: 0 auto; width: 100%;">
+      <header class="dashboard-header">
+        <div>
+          <p class="eyebrow" style="color:#c9a227; margin-bottom:8px;">De La Salle Lipa</p>
+          <h1>Visitor Management System</h1>
+          <p class="subtext">Institutional Safety, Security, and Emergency Services Office (ISSESO)</p>
+        </div>
+      </header>
+
+      <section class="table-card">
+        <div style="margin-bottom: 20px;">
+          <h2 style="margin:0 0 8px;">Visitor Request Form</h2>
+          <p class="subtext" style="margin:0;">Please complete all required details before submitting your request.</p>
+        </div>
+
+        <form id="visitorForm" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div>
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" required />
+          </div>
+
+          <div>
+            <label for="company">Company / Organization</label>
+            <input type="text" id="company" required />
+          </div>
+
+          <div>
+            <label for="contactNumber">Contact Number</label>
+            <input type="text" id="contactNumber" required />
+          </div>
+
+          <div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required />
+          </div>
+
+          <div>
+            <label for="personToVisit">Person to Visit</label>
+            <input type="text" id="personToVisit" required />
+          </div>
+
+          <div>
+            <label for="department">Department / Office</label>
+            <input type="text" id="department" required />
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label for="purpose">Purpose of Visit</label>
+            <textarea id="purpose" rows="4" required></textarea>
+          </div>
+
+          <div>
+            <label for="visitDate">Visit Date</label>
+            <input type="date" id="visitDate" required />
+          </div>
+
+          <div>
+            <label for="visitTime">Visit Time</label>
+            <input type="time" id="visitTime" required />
+          </div>
+
+          <div>
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType">
+              <option value="">Select vehicle type</option>
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV</option>
+              <option value="Van">Van</option>
+              <option value="Pickup">Pickup</option>
+              <option value="Truck">Truck</option>
+              <option value="Motorcycle">Motorcycle</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="carModel">Car Model</label>
+            <input type="text" id="carModel" placeholder="Example: Toyota Vios" />
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label for="plateNumber">Plate Number</label>
+            <input type="text" id="plateNumber" placeholder="Enter plate number" />
+          </div>
+
+          <div style="grid-column:1 / -1; display:flex; gap:12px; flex-wrap:wrap; margin-top:8px;">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Submit Request</button>
+            <button type="reset" class="btn btn-outline">Clear Form</button>
+          </div>
+
+          <div id="message" style="grid-column:1 / -1; font-weight:600;"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+ <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbz_lhUFiSu8PGNfZMKC9CmUG_cLwm02Z2D4FmBn1hhQamMQeIOLGk18zBNE5X8KEGxh/exec";
+
+  const visitorForm = document.getElementById("visitorForm");
+  const messageBox = document.getElementById("message");
+  const submitBtn = document.getElementById("submitBtn");
+
+  function showMessage(type, text) {
+    messageBox.textContent = text;
+    messageBox.style.color = type === "success" ? "#1d8a52" : "#c0392b";
+  }
+
+  visitorForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+
+    const payload = {
+      action: "submitVisitor",
+      fullName: document.getElementById("fullName").value.trim(),
+      company: document.getElementById("company").value.trim(),
+      contactNumber: document.getElementById("contactNumber").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      personToVisit: document.getElementById("personToVisit").value.trim(),
+      department: document.getElementById("department").value.trim(),
+      purpose: document.getElementById("purpose").value.trim(),
+      visitDate: document.getElementById("visitDate").value,
+      visitTime: document.getElementById("visitTime").value,
+      vehicleType: document.getElementById("vehicleType").value,
+      carModel: document.getElementById("carModel").value.trim(),
+      plateNumber: document.getElementById("plateNumber").value.trim().toUpperCase()
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showMessage("success", `Request submitted successfully. Your Request ID is ${result.requestId}.`);
+        visitorForm.reset();
+      } else {
+        showMessage("error", result.message || "Submission failed.");
+      }
+    } catch (error) {
+      console.error(error);
+      showMessage("error", "Unable to connect to the server.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Request";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISSESO Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-bg">
+  <div class="dashboard-shell">
+    <aside class="sidebar sidebar-dlsl">
+      <div class="sidebar-brand">
+        <p class="eyebrow">De La Salle Lipa</p>
+        <h2>ISSESO</h2>
+        <p class="subtext">Visitor Management Dashboard</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item ">Dashboard</a>
+        <a href="visitor-requests.html" class="nav-item active">Visitor Requests</a>
+        <a href="vehicle-monitoring.html" class="nav-item">Vehicle Monitoring</a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-header">
+        <div>
+          <h1>Visitor Request Monitoring</h1>
+          <p class="subtext">Review visitor and vehicle information for campus access monitoring.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadAllData()">Refresh Data</button>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar">
+          <input type="text" id="searchInput" placeholder="Search by name, company, request ID, plate number..." />
+          <select id="statusFilter">
+            <option value="All">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Declined">Declined</option>
+            <option value="Checked In">Checked In</option>
+            <option value="Checked Out">Checked Out</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="table-card">
+        <div class="table-scroll">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Vehicle</th>
+                  <th>Plate Number</th>
+                  <th>Visit Schedule</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="visitorTableBody">
+                <tr>
+                  <td colspan="8" class="empty-cell">Loading visitor records...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="detailsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Visitor Details</h3>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISSESO Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-bg">
+  <div class="dashboard-shell">
+    <aside class="sidebar sidebar-dlsl">
+      <div class="sidebar-brand">
+        <p class="eyebrow">De La Salle Lipa</p>
+        <h2>ISSESO</h2>
+        <p class="subtext">Visitor Management Dashboard</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item active">Dashboard</a>
+        <a href="visitor-requests.html" class="nav-item">Visitor Requests</a>
+        <a href="vehicle-monitoring.html" class="nav-item">Vehicle Monitoring</a>
+      </nav>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p class="subtext">Summary of visitor and vehicle activity for ISSESO.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadDashboardData()">Refresh Dashboard</button>
+      </header>
+
+      <section class="stats-grid dashboard-stats-6">
+        <div class="stat-card">
+          <span>Total Requests</span>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Pending</span>
+          <strong id="statPending">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Approved</span>
+          <strong id="statApproved">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Checked In</span>
+          <strong id="statCheckedIn">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Visits Today</span>
+          <strong id="statToday">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Total Vehicles</span>
+          <strong id="statVehicles">0</strong>
+        </div>
+      </section>
+
+      <section class="table-card dashboard-quick-actions">
+        <div class="dashboard-section-head">
+          <div>
+            <h2>Quick Actions</h2>
+            <p class="subtext">Open the main work areas of the system.</p>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a href="visitor-requests.html" class="quick-link-card">
+            <h3>Visitor Requests</h3>
+            <p>Review, approve, decline, check in, and check out visitor records.</p>
+          </a>
+
+          <a href="vehicle-monitoring.html" class="quick-link-card">
+            <h3>Vehicle Monitoring</h3>
+            <p>Track all submitted vehicle details, including plate numbers and visit status.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="dashboard-two-col">
+        <section class="table-card">
+          <div class="dashboard-section-head">
+            <div>
+              <h2>Recent Visitor Requests</h2>
+              <p class="subtext">Latest 5 submitted requests.</p>
+            </div>
+            <a href="visitor-requests.html" class="btn btn-outline">View All</a>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentRequestsBody">
+                <tr>
+                  <td colspan="4" class="empty-cell">Loading recent requests...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="table-card">
+          <div class="dashboard-section-head">
+            <div>
+              <h2>Recent Vehicle Entries</h2>
+              <p class="subtext">Latest 5 records with vehicle details.</p>
+            </div>
+            <a href="vehicle-monitoring.html" class="btn btn-outline">View All</a>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plate Number</th>
+                  <th>Visitor</th>
+                  <th>Vehicle</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentVehiclesBody">
+                <tr>
+                  <td colspan="4" class="empty-cell">Loading recent vehicle records...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz_lhUFiSu8PGNfZMKC9CmUG_cLwm02Z2D4FmBn1hhQamMQeIOLGk18zBNE5X8KEGxh/exec";
+
+    async function loadDashboardData() {
+      await Promise.all([
+        loadStats(),
+        loadRecentRequests(),
+        loadRecentVehicles()
+      ]);
+    }
+
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_URL}?action=dashboardStats`);
+        const result = await response.json();
+        const stats = result.stats || {};
+
+        document.getElementById("statTotal").textContent = stats.total || 0;
+        document.getElementById("statPending").textContent = stats.pending || 0;
+        document.getElementById("statApproved").textContent = stats.approved || 0;
+        document.getElementById("statCheckedIn").textContent = stats.checkedIn || 0;
+        document.getElementById("statToday").textContent = stats.todayVisits || 0;
+        document.getElementById("statVehicles").textContent = stats.totalVehicles || 0;
+      } catch (error) {
+        console.error("Failed to load dashboard stats:", error);
+      }
+    }
+
+    async function loadRecentRequests() {
+      const tbody = document.getElementById("recentRequestsBody");
+
+      try {
+        const response = await fetch(`${API_URL}?action=listVisitors`);
+        const result = await response.json();
+        const visitors = (result.visitors || []).reverse().slice(0, 5);
+
+        if (!visitors.length) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty-cell">No recent requests found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = visitors.map(v => `
+          <tr>
+            <td>${escapeHtml(v["Request ID"] || "")}</td>
+            <td>${escapeHtml(v["Full Name"] || "")}</td>
+            <td>${escapeHtml(v["Company"] || "")}</td>
+            <td>
+              <span class="status-pill ${getBadgeClass(v["Status"] || "Pending")}">
+                ${escapeHtml(v["Status"] || "Pending")}
+              </span>
+            </td>
+          </tr>
+        `).join("");
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-cell">Failed to load recent requests.</td></tr>`;
+      }
+    }
+
+    async function loadRecentVehicles() {
+      const tbody = document.getElementById("recentVehiclesBody");
+
+      try {
+        const response = await fetch(`${API_URL}?action=listVehicles`);
+        const result = await response.json();
+        const vehicles = (result.vehicles || []).reverse().slice(0, 5);
+
+        if (!vehicles.length) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty-cell">No recent vehicle records found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = vehicles.map(v => `
+          <tr>
+            <td>${escapeHtml(v["Plate Number"] || "-")}</td>
+            <td>${escapeHtml(v["Full Name"] || "")}</td>
+            <td>${escapeHtml(v["Vehicle Type"] || "-")} ${v["Car Model"] ? `• ${escapeHtml(v["Car Model"])}` : ""}</td>
+            <td>
+              <span class="status-pill ${getBadgeClass(v["Status"] || "Pending")}">
+                ${escapeHtml(v["Status"] || "Pending")}
+              </span>
+            </td>
+          </tr>
+        `).join("");
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-cell">Failed to load recent vehicle records.</td></tr>`;
+      }
+    }
+
+    function getBadgeClass(status) {
+      if (status === "Approved") return "approved";
+      if (status === "Declined") return "declined";
+      if (status === "Checked In") return "checkedin";
+      if (status === "Checked Out") return "checkedout";
+      return "pending";
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    loadDashboardData();
+  </script>
+</body>
+</html>
